@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>竹北租屋精選看板</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin:0; background:#f6f7f9; color:#1c1e21; font-family:-apple-system,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif; }
+.wrap { max-width:1040px; margin:0 auto; padding:20px 16px 60px; }
+header h1 { font-size:22px; margin:0 0 4px; }
+.sub { color:#6b7280; font-size:13px; margin-bottom:2px; }
+.controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:14px 0 6px; }
+.controls label { font-size:12.5px; color:#6b7280; font-weight:600; }
+select { font-size:13px; padding:7px 10px; border:1px solid #d1d5db; border-radius:9px; background:#fff; color:#111827; min-width:250px; }
+.meta-bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:10px 0 18px; }
+.pill { background:#fff; border:1px solid #e5e7eb; border-radius:999px; padding:5px 12px; font-size:12.5px; color:#374151; }
+.pill b { color:#111827; }
+.crit { background:#eef2ff; border:1px solid #e0e7ff; border-radius:12px; padding:12px 14px; font-size:12.5px; color:#3730a3; line-height:1.7; margin-bottom:20px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+.card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:15px 16px; display:flex; flex-direction:column; gap:9px; }
+.card .top { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+.badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:6px; white-space:nowrap; }
+.b-floor { background:#ecfdf5; color:#047857; }
+.b-suite { background:#fff7ed; color:#c2410c; }
+.price { font-size:20px; font-weight:800; color:#e11d48; }
+.price small { font-size:12px; font-weight:600; color:#9ca3af; }
+.title { font-size:14.5px; font-weight:700; line-height:1.5; }
+.spec { font-size:13px; color:#374151; }
+.loc { font-size:12.5px; color:#6b7280; }
+.tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:2px; }
+.tag { font-size:11px; background:#f3f4f6; color:#4b5563; border-radius:5px; padding:2px 7px; }
+.verdict { font-size:12.5px; background:#f0fdf4; border:1px solid #dcfce7; color:#166534; border-radius:8px; padding:7px 9px; line-height:1.55; }
+.vlabel { font-weight:700; }
+.photo { font-size:11px; color:#2563eb; font-weight:600; }
+.go { margin-top:auto; text-align:center; text-decoration:none; background:#111827; color:#fff; font-size:13px; font-weight:600; padding:8px; border-radius:8px; }
+.go:hover { background:#374151; }
+.empty { color:#6b7280; font-size:14px; padding:40px 0; text-align:center; }
+.rej { margin-top:26px; }
+.rej h3 { font-size:14px; color:#6b7280; margin:0 0 8px; }
+.rej ul { margin:0; padding-left:18px; color:#9ca3af; font-size:12.5px; line-height:1.9; }
+footer { margin-top:34px; color:#9ca3af; font-size:11.5px; line-height:1.7; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>竹北租屋精選看板</h1>
+  <div class="sub">整層住家 + 獨立套房 ｜ 租金 20,000 – 35,000 ｜ 坪數 &gt;15坪 ｜ 新上架 ｜ 每筆皆經照片審查</div>
+</header>
+
+<div class="controls">
+  <label for="periodSel">掃描時段</label>
+  <select id="periodSel"></select>
+</div>
+
+<div class="meta-bar" id="metaBar"></div>
+
+<div class="crit">
+  <b>品質篩選標準：</b>① 坪數須 <b>大於 15 坪</b>（15 坪含以下一律排除）。② <b>每一筆都逐張檢視相簿照片審查家具</b>：須有清楚室內實景、看得到基本家具家電（冷氣、床、衣櫃、沙發、洗衣機、流理台等）。③ 排除空屋／無家具／無實景照／裝潢明顯老舊者。
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="rej" id="rejWrap"></div>
+
+<footer id="foot"></footer>
+</div>
+
+<script>
+/* =========================================================================
+   多時段快照資料。
+   每次排程掃描：把最新一批結果做成一個 snapshot 物件放進 HISTORY 最前面
+   （id 用時間字串、務必唯一）。看板會用下拉切換，並自動存進 localStorage
+   累積歷史（即使檔案只留一筆，觀看者這台電腦仍會保留看過的舊時段）。
+   ========================================================================= */
+const HISTORY = [
+  {
+    id: "2026-07-14 18:54",
+    label: "2026-07-14 晚間（逐筆照片審查）",
+    picks: [
+      { type:"floor", price:"30,000", extra:"含車位租金 · 另約 3,000/月",
+        title:"高鐵特區 · 溫馨質感美三房＋雙平車",
+        spec:"整層住家 · 3房2廳2衛 · 30坪 · 2F/7F · 電梯大樓",
+        loc:"竹北市 嘉豐二街一段 · 距自強南路快捷約 306m",
+        tags:["新上架","可報稅","拎包入住","近商圈","有電梯"],
+        verdict:"照片審查：有床、大冰箱、現代廚具與獨立玻璃淋浴衛浴、冷氣齊全，屋況新；客廳略空但主要家具具備。",
+        photo:true, url:"https://rent.591.com.tw/21637552" },
+      { type:"floor", price:"35,000", extra:"含車位租金 · 另約 4,288/月",
+        title:"高鐵生醫特區 · 質感美三房＠精緻裝潢＋車位",
+        spec:"整層住家 · 3房2廳2衛 · 35坪 · 8F/14F · 電梯大樓",
+        loc:"竹北市 六家五路一段 · 近高鐵/生醫園區",
+        tags:["新上架","拎包入住","近商圈","有電梯","可開伙"],
+        verdict:"照片審查：精緻裝潢、L型皮沙發、電視、餐桌椅；多間臥室皆有床與衣櫃、現代廚具、冷氣，屋況新。",
+        photo:true, url:"https://rent.591.com.tw/21637416" },
+      { type:"floor", price:"30,000", extra:"含車位租金 · 另約 2,378/月",
+        title:"熱晴專線 · 莊敬三路優質三房＋車位",
+        spec:"整層住家 · 3房2廳2衛 · 26.2坪 · 3F/13F · 電梯大樓",
+        loc:"竹北市 莊敬三路 · 近竹北遠百",
+        tags:["新上架","可報稅","拎包入住","有電梯","有車位"],
+        verdict:"照片審查：附大冰箱、沙發、電視；多房皆有床與衣櫃、兒童房上下舖、冷氣，屋況整齊。",
+        photo:true, url:"https://rent.591.com.tw/21636647" },
+      { type:"floor", price:"30,000", extra:"含車位租金 · 另約 2,378/月",
+        title:"租縣二外棟採光三房＋平車",
+        spec:"整層住家 · 3房2廳2衛 · 26坪 · 3F/13F · 電梯大樓",
+        loc:"竹北市 莊敬三路 · 近商圈",
+        tags:["新上架","可報稅","近商圈","有電梯","可開伙"],
+        verdict:"照片審查：附冰箱、沙發、電視、床；現代廚具與玻璃淋浴衛浴、冷氣，屋況新。",
+        photo:true, url:"https://rent.591.com.tw/21636507" },
+      { type:"floor", price:"27,000", extra:"含車位租金 · 另約 3,700/月",
+        title:"近省道台元昌益園區 · 電梯三房家具電＋平面車位",
+        spec:"整層住家 · 3房2廳2衛 · 30坪 · 8F/10F · 電梯大樓",
+        loc:"竹北市 環北路三段 · 近台元/省道",
+        tags:["新上架","拎包入住","有電梯","可開伙","有車位"],
+        verdict:"照片審查：全新裝潢，附冰箱、沙發、餐桌；多房皆有床與衣櫃、現代淋浴衛浴、冷氣，家具家電齊全。",
+        photo:true, url:"https://rent.591.com.tw/21636402" },
+      { type:"suite", price:"24,600", extra:"含管理費/第四台/清潔費",
+        title:"高鐵生醫園區 · 精緻挑高大坪數樓中樓",
+        spec:"獨立套房 · 樓中樓 · 16坪 · 8F/10F · 電梯大樓",
+        loc:"竹北市 隘口六街 · 近高鐵/生醫園區",
+        tags:["新上架","拎包入住","近商圈","有電梯","有陽台"],
+        verdict:"照片審查：挑高樓中樓，附沙發、洗衣機、流理台廚具與冰箱，屋況尚可。提醒：此件 2 天前發佈、5 小時內更新，非全新上架。",
+        photo:true, url:"https://rent.591.com.tw/21622045" }
+    ],
+    rejected: [
+      "新泰路核心地段三房 28,000／月（21637598、21528912 同一物件）— 有家具但藍白磁磚老式衛浴、裝潢老舊",
+      "華興重劃區精美三房 30,000／月（21636626）— 裝潢雖新，但臥室未見床鋪、家具不齊、近空屋",
+      "中正國小旁優質三房 21,000／月（21636217）— 老式公寓、木地板泛黃老舊、僅一張沙發近乎空屋",
+      "勝利一路四房＋平車 35,000／月（21635351／21635261 同一物件）— 中式舊木作家具、屋況老氣",
+      "近台元木作兩房 28,000／月（21635232）— 大量老式木作牆面與天花、裝潢明顯老舊",
+      "標示「空屋」、「限工程師合租/分租」、「1+1房」者 — 文字初篩直接排除"
+    ]
+  },
+  {
+    id: "2026-07-14 00:37",
+    label: "2026-07-14 凌晨（首次掃描）",
+    picks: [
+      { type:"suite", price:"29,000", extra:"含車位租金 · 另約 2,192/月",
+        title:"屋主自租 · 高鐵特區寶佳奇磊全新高級大套房",
+        spec:"獨立套房 · 19.9坪 · 3F/14F · 電梯大樓",
+        loc:"竹北市 高鐵東二路（寶佳奇磊）· 距高鐵約 107m",
+        tags:["新上架","屋主直租","拎包入住","有電梯","有車位"],
+        verdict:"照片審查：全新高級電梯大樓；室內附大床、沙發、電視、衣櫃與全新衛浴，家具齊全、非空屋，裝潢新。",
+        photo:true, url:"https://rent.591.com.tw/21619560" },
+      { type:"floor", price:"34,500", extra:"含車位租金 · 另約 2,500/月",
+        title:"遠百寵物友善 · 精美系統大四房＋B1平車",
+        spec:"整層住家 · 4房2廳2衛 · 35坪 · 2F/15F · 電梯大樓",
+        loc:"竹北市 莊敬五街 · 近六家派出所/大遠百",
+        tags:["新上架","可報稅","拎包入住","近商圈","有電梯"],
+        verdict:"照片審查：系統櫃新裝潢，附餐桌椅、床、衣櫃與廚具，基本家具具備（客廳較空）、裝潢新。",
+        photo:true, url:"https://rent.591.com.tw/21628355" }
+    ],
+    rejected: [
+      "合新詠遇 高鐵高樓美三房 22.6坪 30,000／月 — 裝潢新但全屋空屋、無任何家具",
+      "⭐近高鐵兩房 15坪、台元旁全新套房 10坪、近台元新電梯套房 9坪 — 坪數未達 >15坪 下限",
+      "標示「空屋」、限工程師合租的分租物件、純社會住宅/車位型 — 直接排除"
+    ]
+  }
+];
+
+/* ---- localStorage 自動累積：把檔案內建的 HISTORY 併入這台電腦看過的舊快照 ---- */
+const LS_KEY = "zhubei_scan_history_v1";
+function loadMerged(){
+  let stored = [];
+  try { stored = JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch(e){ stored = []; }
+  const byId = {};
+  stored.forEach(s => { if(s && s.id) byId[s.id] = s; });
+  HISTORY.forEach(s => { byId[s.id] = s; });          // 檔案內的為最新定義，覆蓋同 id
+  const merged = Object.values(byId).sort((a,b)=> a.id < b.id ? 1 : -1);  // id(時間) 由新到舊
+  try { localStorage.setItem(LS_KEY, JSON.stringify(merged)); } catch(e){}
+  return merged;
+}
+const SNAPSHOTS = loadMerged();
+
+const typeMeta = { floor:{label:"整層住家",cls:"b-floor"}, suite:{label:"獨立套房",cls:"b-suite"} };
+const sel = document.getElementById('periodSel');
+SNAPSHOTS.forEach((s,i)=>{
+  const o=document.createElement('option'); o.value=String(i);
+  o.textContent = s.label + `（${s.picks.length} 筆）`;
+  sel.appendChild(o);
+});
+
+function render(i){
+  const snap = SNAPSHOTS[i];
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  if(!snap.picks.length){ grid.innerHTML='<div class="empty">本時段沒有符合品質標準的新上架物件。</div>'; }
+  snap.picks.forEach(p=>{
+    const t=typeMeta[p.type];
+    const el=document.createElement('div'); el.className='card';
+    el.innerHTML=`
+      <div class="top">
+        <span class="badge ${t.cls}">${t.label}</span>
+        <span class="price">${p.price}<small> 元/月</small></span>
+      </div>
+      <div class="title">${p.title}</div>
+      <div class="spec">${p.spec}</div>
+      <div class="loc">📍 ${p.loc}</div>
+      <div class="tags">${p.tags.map(x=>`<span class="tag">${x}</span>`).join('')}</div>
+      <div class="verdict"><span class="vlabel">品質判定：</span>${p.verdict} ${p.photo?'<span class="photo">✓ 照片確認</span>':''}</div>
+      ${p.extra?`<div class="loc">💡 ${p.extra}</div>`:''}
+      <a class="go" href="${p.url}" target="_blank" rel="noopener">在 591 查看物件 →</a>`;
+    grid.appendChild(el);
+  });
+
+  const floors=snap.picks.filter(p=>p.type==='floor').length, suites=snap.picks.filter(p=>p.type==='suite').length;
+  document.getElementById('metaBar').innerHTML=
+    `<span class="pill">時段 <b>${snap.label}</b></span>`+
+    `<span class="pill">通過品質篩選 <b>${snap.picks.length}</b> 筆</span>`+
+    `<span class="pill">整層住家 <b>${floors}</b> · 獨立套房 <b>${suites}</b></span>`+
+    `<span class="pill">共保留 <b>${SNAPSHOTS.length}</b> 個時段</span>`;
+
+  const rejWrap=document.getElementById('rejWrap');
+  rejWrap.innerHTML = (snap.rejected && snap.rejected.length)
+    ? `<h3>本時段已排除（示例）</h3><ul>${snap.rejected.map(r=>`<li>${r}</li>`).join('')}</ul>` : '';
+}
+
+sel.addEventListener('change', e=> render(parseInt(e.target.value,10)));
+render(0);
+
+document.getElementById('foot').innerHTML=
+  '資料來源：591 租屋網（新竹縣竹北市）· 每日三時段自動掃描更新 · 每筆皆逐張檢視相簿照片審查家具 · 上方下拉可切換不同掃描時段 · 點擊物件前請自行於 591 再次確認現況與屋主資訊';
+</script>
+</body>
+</html>
