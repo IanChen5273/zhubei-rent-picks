@@ -75,9 +75,6 @@ footer { margin-top:34px; color:#9ca3af; font-size:11.5px; line-height:1.7; text
 </div>
 
 <script>
-/* =========================================================================
-   多時段快照資料。
-   ========================================================================= */
 const HISTORY = [
   {
     id: "2026-07-18 08:03",
@@ -574,7 +571,6 @@ const HISTORY = [
   }
 ];
 
-/* ---- localStorage 自動累積 ---- */
 const LS_KEY = "zhubei_scan_history_v1";
 function loadMerged(){
   let stored = [];
@@ -590,11 +586,23 @@ const SNAPSHOTS = loadMerged();
 
 const typeMeta = { floor:{label:"整層住家",cls:"b-floor"}, suite:{label:"獨立套房",cls:"b-suite"} };
 const sel = document.getElementById('periodSel');
-SNAPSHOTS.forEach((s,i)=>{
+const withPicks = [], zeroPicks = [];
+SNAPSHOTS.forEach((s,i)=>{ (s.picks.length ? withPicks : zeroPicks).push(i); });
+function addOpt(parent,i){
+  const s=SNAPSHOTS[i];
   const o=document.createElement('option'); o.value=String(i);
   o.textContent = s.label + `（${s.picks.length} 筆）`;
-  sel.appendChild(o);
-});
+  parent.appendChild(o);
+}
+if(withPicks.length){
+  const g=document.createElement('optgroup'); g.label='搜尋結果（有物件）';
+  withPicks.forEach(i=>addOpt(g,i)); sel.appendChild(g);
+}
+if(zeroPicks.length){
+  const g=document.createElement('optgroup'); g.label='其他（本時段 0 筆）';
+  zeroPicks.forEach(i=>addOpt(g,i)); sel.appendChild(g);
+}
+const defaultIndex = withPicks.length ? withPicks[0] : 0;
 
 function render(i){
   const snap = SNAPSHOTS[i];
@@ -632,7 +640,8 @@ function render(i){
 }
 
 sel.addEventListener('change', e=> render(parseInt(e.target.value,10)));
-render(0);
+sel.value = String(defaultIndex);
+render(defaultIndex);
 
 document.getElementById('foot').innerHTML=
   '資料來源：591 租屋網（新竹縣竹北市）· 每日三時段自動掃描更新 · 每筆皆逐張檢視相簿照片審查家具 · 上方下拉可切換不同掃描時段 · 點擊物件前請自行於 591 再次確認現況與屋主資訊';
